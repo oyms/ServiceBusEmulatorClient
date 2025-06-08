@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skaar.ServiceBusEmulatorClient", "src\Skaar.ServiceBusEmulatorClient\Skaar.ServiceBusEmulatorClient.csproj", "{90AAC942-D90C-4D4E-A229-3B33A7A75947}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skaar.ServiceBusEmulatorClientTests", "tests\Skaar.ServiceBusEmulatorClientTests\Skaar.ServiceBusEmulatorClientTests.csproj", "{AA9040D2-B563-4E04-A45B-229C6AD51359}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90AAC942-D90C-4D4E-A229-3B33A7A75947}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90AAC942-D90C-4D4E-A229-3B33A7A75947}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90AAC942-D90C-4D4E-A229-3B33A7A75947}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90AAC942-D90C-4D4E-A229-3B33A7A75947}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
