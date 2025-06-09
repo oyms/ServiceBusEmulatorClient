@@ -1,0 +1,25 @@
+@rootUrl=http://localhost:5278/
+@queueName=queue.1
+
+### List all message-ids in a queue
+
+GET {{rootUrl}}/queue/{{queueName}}/ids
+
+### Get all messages in queue
+
+GET {{rootUrl}}/queue/{{queueName}}
+
+### Get one message from queue
+
+@messageId=8bac1145d3b14b21a677127ade260773
+
+GET {{rootUrl}}/queue/{{queueName}}/{{messageId}}
+
+### Post message to queue
+
+POST {{rootUrl}}/queue/{{queueName}}
+Content-Type: application/xml
+
+<document>
+    <text>Some text</text>
+</document>

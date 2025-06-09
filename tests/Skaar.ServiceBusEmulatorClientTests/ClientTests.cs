@@ -1,5 +1,6 @@
 
 using Skaar.ServiceBusEmulatorClient;
+using System.Reflection;
 
 namespace Skaar.ServiceBusEmulatorClientTests;
 
@@ -14,7 +15,18 @@ public class ClientTests(ITestContextAccessor testContextAccessor)
     {
         await using var target = new Client(_config);
         var body = new{Text="Some text", Flag=true, Value=Random.Shared.Next()};
-        await target.SendJsonMessage(QueueName, body);
+        await target.SendJsonMessage(QueueName, body, null, testContextAccessor.Current.CancellationToken);
+    }    
+    
+    [Fact]
+    public async Task AddBinaryMessage()
+    {
+        var cancellationToken = testContextAccessor.Current.CancellationToken;
+        await using var image = Assembly.GetExecutingAssembly().GetManifestResourceStream("Skaar.ServiceBusEmulatorClientTests.Resources.sign.png");
+        await using var target = new Client(_config);
+        await using var stream = new MemoryStream();
+        await image!.CopyToAsync(stream, cancellationToken);
+        await target.SendMessage(QueueName, "image/png", stream.ToArray(), "Bus stop", cancellationToken);
     }
     
     [Fact]
@@ -22,7 +34,7 @@ public class ClientTests(ITestContextAccessor testContextAccessor)
     {
         await using var target = new Client(_config);
 
-        var result = target.PeekAllMessages(QueueName);
+        var result = target.PeekAllMessages(QueueName, testContextAccessor.Current.CancellationToken);
 
         await foreach (var msg in result)
         {

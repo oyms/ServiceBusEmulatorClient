@@ -15,5 +15,7 @@ public record QueueMessage
     
     public string Id => _message.MessageId;
 
+    public string ContentType => _message.ContentType;
+    public BinaryData Body => _message.Body;
     public override string ToString() => _message.ToString();
 };

@@ -1,0 +1,6 @@
+@Skaar.ServiceBusEmulatorClient.Http_HostAddress = http://localhost:5278
+
+GET {{Skaar.ServiceBusEmulatorClient.Http_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

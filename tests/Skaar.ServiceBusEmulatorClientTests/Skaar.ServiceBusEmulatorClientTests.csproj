@@ -28,4 +28,9 @@
       <ProjectReference Include="..\..\src\Skaar.ServiceBusEmulatorClient\Skaar.ServiceBusEmulatorClient.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resources\sign.png" />
+      <EmbeddedResource Include="Resources\sign.png" />
+    </ItemGroup>
+
 </Project>

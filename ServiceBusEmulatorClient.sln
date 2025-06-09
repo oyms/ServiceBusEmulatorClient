@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skaar.ServiceBusEmulatorCli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skaar.ServiceBusEmulatorClientTests", "tests\Skaar.ServiceBusEmulatorClientTests\Skaar.ServiceBusEmulatorClientTests.csproj", "{AA9040D2-B563-4E04-A45B-229C6AD51359}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skaar.ServiceBusEmulatorClient.Http", "src\Skaar.ServiceBusEmulatorClient.Http\Skaar.ServiceBusEmulatorClient.Http.csproj", "{869239D6-FB83-4013-A5DA-0CDD13F56897}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA9040D2-B563-4E04-A45B-229C6AD51359}.Release|Any CPU.Build.0 = Release|Any CPU
+		{869239D6-FB83-4013-A5DA-0CDD13F56897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{869239D6-FB83-4013-A5DA-0CDD13F56897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{869239D6-FB83-4013-A5DA-0CDD13F56897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{869239D6-FB83-4013-A5DA-0CDD13F56897}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
