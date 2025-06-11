@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Skaar.ServiceBusEmulatorClient.Http.Models;
 using Skaar.ServiceBusEmulatorClient.Model;
 using System.Buffers;
 using System.Runtime.CompilerServices;
@@ -16,7 +17,7 @@ public static class EndpointRouteBuilderExtensions
 
         endpoints.MapGet("/queue/{queueName}/ids", GetMessageIdsFromQueue)
             .WithName("Peek all message-ids from queue")
-            .Produces<IEnumerable<string>>(200)
+            .Produces<IEnumerable<MessageReference>>(200)
             .Produces<NotFound>();
 
         endpoints.MapGet("/queue/{queueName}/{messageId}", GetMessageFromQueue)
@@ -41,7 +42,7 @@ public static class EndpointRouteBuilderExtensions
 
         endpoints.MapGet("/topic/{topicName}/{subscription}", GetMessagesFromTopic)
             .WithName("Peek all messages from topic")
-            .Produces<IEnumerable<string>>(200)
+            .Produces<IEnumerable<MessageReference>>(200)
             .Produces<NotFound>();
 
         endpoints.MapGet("/topic/{topicName}/{subscription}/ids", GetMessageIdsFromTopic)
@@ -99,7 +100,7 @@ public static class EndpointRouteBuilderExtensions
         return Results.NoContent();
     }
 
-    private static async IAsyncEnumerable<string> GetMessageIdsFromQueue(QueueOrTopicName queueName, IClient client,
+    private static async IAsyncEnumerable<MessageReference> GetMessageIdsFromQueue(QueueOrTopicName queueName, IClient client,
         HttpContext context, LinkGenerator linker, [EnumeratorCancellation] CancellationToken ct)
     {
         var msgs = client.PeekAllMessages(queueName, ct);
@@ -107,11 +108,11 @@ public static class EndpointRouteBuilderExtensions
         {
             var link = linker.GetUriByName(context, "Peek at a message from queue",
                 new { queueName, messageId = msg.Id })!;
-            yield return link;
+            yield return new MessageReference(msg, queueName, link);
         }
     }
 
-    private static async IAsyncEnumerable<string> GetMessageIdsFromTopic(QueueOrTopicName topicName,
+    private static async IAsyncEnumerable<MessageReference> GetMessageIdsFromTopic(QueueOrTopicName topicName,
         SubscriptionName subscription, IClient client, HttpContext context, LinkGenerator linker,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -120,7 +121,7 @@ public static class EndpointRouteBuilderExtensions
         {
             var link = linker.GetUriByName(context, "Peek at a message from topic",
                 new { topicName, messageId = msg.Id, subscription })!;
-            yield return link;
+            yield return new MessageReference(msg, topicName, link);
         }
     }
 

@@ -14,7 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<Settings>(configuration.GetSection("Settings"));
 builder.Services.AddServices();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApiDocument(config =>
+{
+    config.Title = "Servicebus emulator client";
+    config.Description = "A simplified http interface to the servicebus client library";
+});
 
 var app = builder.Build();
 
@@ -25,5 +30,8 @@ app.MapOpenApi();
 app.UseHttpsRedirection();
 
 app.MapEndpoints();
+
+app.UseOpenApi();
+app.UseSwaggerUi();
 
 app.Run();
