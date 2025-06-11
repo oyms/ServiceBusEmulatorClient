@@ -2,18 +2,17 @@
 @queueName=queue.1
 @topicName=weu-dev-nadin-prices-upload-sbt
 @subscription=carsales-sbts
+@messageId=d2712a9d932d4ce7ba3bfbccc45c5436
 
 ### List all message-ids in a queue
 
 GET {{rootUrl}}/queue/{{queueName}}/ids
 
-### Get all messages in queue
+### Peek all messages in queue
 
 GET {{rootUrl}}/queue/{{queueName}}
 
-### Get one message from queue
-
-@messageId=8bac1145d3b14b21a677127ade260773
+### Peek one message from queue
 
 GET {{rootUrl}}/queue/{{queueName}}/{{messageId}}
     
@@ -21,11 +20,11 @@ GET {{rootUrl}}/queue/{{queueName}}/{{messageId}}
 
 GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/ids
 
-### Get all messages in topic
+### Peek all messages in topic
 
 GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/
 
-### Get one message from topic
+### Peek one message from topic
 
 GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/{{messageId}}
 
@@ -50,3 +49,7 @@ Subject: Some random json
     "text": "Some text"
   }
 }
+
+### Complete message from queue
+
+DELETE {{rootUrl}}/queue/{{queueName}}/{{messageId}}

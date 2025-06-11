@@ -157,15 +157,15 @@ public static class EndpointRouteBuilderExtensions
     private static async Task<IResult> CompleteMessageFromQueue(QueueOrTopicName queueName, MessageId messageId,
         IClient client, CancellationToken ct)
     {
-        var result = await client.CompleteMessage(queueName, messageId, ct);
-        return result ? Results.Ok() : Results.NotFound();
+        await client.CompleteMessage(queueName, messageId, ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> CompleteMessageFromTopic(QueueOrTopicName topicName,
         SubscriptionName subscription, MessageId messageId, IClient client, CancellationToken ct)
     {
-        var result = await client.CompleteMessage(topicName, subscription, messageId, ct);
-        return result ? Results.Ok() : Results.NotFound();
+        await client.CompleteMessage(topicName, subscription, messageId, ct);
+        return Results.NoContent();
     }
 
     private static async Task RenderMessagesAsMultiPart(IAsyncEnumerable<QueueMessage> msgs, HttpContext context,

@@ -10,22 +10,6 @@ public class Client(IConfiguration configuration) : IAsyncDisposable, IClient
 {
     private ServiceBusClient? _client;
 
-    [MemberNotNull(nameof(_client))]
-    private void SetUp()
-    {
-        _client ??= new ServiceBusClient(configuration.ConnectionString);
-    }
-
-    private ServiceBusReceiver CreateReceiver(QueueOrTopicName queueOrTopicName, SubscriptionName? subscription)
-    {
-        SetUp();
-        if (subscription is null)
-        {
-            return _client.CreateReceiver(queueOrTopicName.ToString());
-        }
-        return _client.CreateReceiver(queueOrTopicName.ToString(), subscription.ToString());
-    }
-
     public async Task SendMessage(QueueOrTopicName queue, string contentType, ReadOnlyMemory<byte> data,
         string? subject = null, CancellationToken ct = default)
     {
@@ -42,26 +26,34 @@ public class Client(IConfiguration configuration) : IAsyncDisposable, IClient
         return SendJsonMessage(queue, json, ct);
     }
 
-    public async Task<bool> CompleteMessage(QueueOrTopicName queue, MessageId id, CancellationToken ct = default)
+    public async Task CompleteMessage(QueueOrTopicName queue, MessageId id, CancellationToken ct = default)
     {
         SetUp();
+        await PeekMessage(queue, id, ct);
         await using var receiver = _client.CreateReceiver(queue.ToString(),
             new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock });
-        return await CompleteMessage(receiver, id, ct);
+        if (!await CompleteMessage(receiver, id, ct))
+        {
+            throw new MessageNotFoundException(queue, id);
+        };
     }
 
-    public async Task<bool> CompleteMessage(QueueOrTopicName topic, SubscriptionName subscription, MessageId id,
+    public async Task CompleteMessage(QueueOrTopicName topic, SubscriptionName subscription, MessageId id,
         CancellationToken ct = default)
     {
         SetUp();
+        await PeekMessage(topic, subscription, id, ct);
         await using var receiver = _client.CreateReceiver(topic.ToString(), subscription.ToString(),
             new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock });
-        return await CompleteMessage(receiver, id, ct);
+        if (!await CompleteMessage(receiver, id, ct))
+        {
+            throw new MessageNotFoundException(topic, id);
+        };
     }
 
     private async Task<bool> CompleteMessage(ServiceBusReceiver receiver, MessageId id, CancellationToken ct)
     {
-        var receivedMessage = await receiver.ReceiveMessageAsync(cancellationToken: ct);
+        var receivedMessage = await receiver.ReceiveMessageAsync(maxWaitTime: TimeSpan.FromSeconds(3), cancellationToken: ct);
         while (receivedMessage != null)
         {
             if (receivedMessage.MessageId == id.ToString())
@@ -154,6 +146,22 @@ public class Client(IConfiguration configuration) : IAsyncDisposable, IClient
         }
 
         throw new MessageNotFoundException(topic, messageId);
+    }
+
+    private ServiceBusReceiver CreateReceiver(QueueOrTopicName queueOrTopicName, SubscriptionName? subscription)
+    {
+        SetUp();
+        if (subscription is null)
+        {
+            return _client.CreateReceiver(queueOrTopicName.ToString());
+        }
+        return _client.CreateReceiver(queueOrTopicName.ToString(), subscription.ToString());
+    }
+
+    [MemberNotNull(nameof(_client))]
+    private void SetUp()
+    {
+        _client ??= new ServiceBusClient(configuration.ConnectionString);
     }
 
     public async ValueTask DisposeAsync()
