@@ -1,0 +1,2 @@
+Servicebus emulator client library
+===

@@ -1,0 +1,27 @@
+<Project>
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591;CA1822</NoWarn>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <Product>Servicebus emulator client</Product>
+        <Authors>Skaar</Authors>
+        <PackageTags>Development;ServiceBus;Azure</PackageTags>
+        <IncludeSymbols>true</IncludeSymbols>
+        <IncludeSource>false</IncludeSource>
+        <RepositoryUrl>https://github.com/oyms/ServiceBusEmulatorClient</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageReleaseNotes>
+            1.0.0: Initial.
+        </PackageReleaseNotes>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\..\resources\logo.png" Pack="true" PackagePath="" />
+        <None Include=".\README.md" Pack="true" PackagePath="/" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+</Project> 
