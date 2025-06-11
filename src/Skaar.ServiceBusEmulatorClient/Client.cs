@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Skaar.ServiceBusEmulatorClient;
 
-public class Client(IConfiguration configuration):IAsyncDisposable, IClient
+public class Client(IConfiguration configuration) : IAsyncDisposable, IClient
 {
     private ServiceBusClient? _client;
 
@@ -16,85 +16,144 @@ public class Client(IConfiguration configuration):IAsyncDisposable, IClient
         _client ??= new ServiceBusClient(configuration.ConnectionString);
     }
 
-    public async Task SendMessage(string queue, string contentType, ReadOnlyMemory<byte> data, string? subject = null, CancellationToken ct = default)
+    private ServiceBusReceiver CreateReceiver(QueueOrTopicName queueOrTopicName, SubscriptionName? subscription)
     {
         SetUp();
-        await using var sender = _client.CreateSender(queue);
-        var message = new ServiceBusMessage(data)
+        if (subscription is null)
         {
-            ContentType = contentType,
-            Subject = subject
-        };
+            return _client.CreateReceiver(queueOrTopicName.ToString());
+        }
+        return _client.CreateReceiver(queueOrTopicName.ToString(), subscription.ToString());
+    }
+
+    public async Task SendMessage(QueueOrTopicName queue, string contentType, ReadOnlyMemory<byte> data,
+        string? subject = null, CancellationToken ct = default)
+    {
+        SetUp();
+        await using var sender = _client.CreateSender(queue.ToString());
+        var message = new ServiceBusMessage(data) { ContentType = contentType, Subject = subject };
         await sender.SendMessageAsync(message, ct);
     }
 
-    public Task SendJsonMessage<T>(string queue, T body, System.Text.Json.JsonSerializerOptions? options = null, CancellationToken ct = default)
+    public Task SendJsonMessage<T>(QueueOrTopicName queue, T body,
+        System.Text.Json.JsonSerializerOptions? options = null, CancellationToken ct = default)
     {
         var json = System.Text.Json.JsonSerializer.Serialize<T>(body, options);
         return SendJsonMessage(queue, json, ct);
     }
-    
-    private async Task SendJsonMessage(string queue, string jsonBody, CancellationToken ct = default)
+
+    public async Task<bool> CompleteMessage(QueueOrTopicName queue, MessageId id, CancellationToken ct = default)
     {
         SetUp();
-        await using var sender = _client.CreateSender(queue);
-        var message = new ServiceBusMessage(jsonBody)
+        await using var receiver = _client.CreateReceiver(queue.ToString(),
+            new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+        return await CompleteMessage(receiver, id, ct);
+    }
+
+    public async Task<bool> CompleteMessage(QueueOrTopicName topic, SubscriptionName subscription, MessageId id,
+        CancellationToken ct = default)
+    {
+        SetUp();
+        await using var receiver = _client.CreateReceiver(topic.ToString(), subscription.ToString(),
+            new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+        return await CompleteMessage(receiver, id, ct);
+    }
+
+    private async Task<bool> CompleteMessage(ServiceBusReceiver receiver, MessageId id, CancellationToken ct)
+    {
+        var receivedMessage = await receiver.ReceiveMessageAsync(cancellationToken: ct);
+        while (receivedMessage != null)
         {
-            ContentType = "application/json"
-        };
+            if (receivedMessage.MessageId == id.ToString())
+            {
+                await receiver.CompleteMessageAsync(receivedMessage, ct);
+                return true;
+            }
+
+            await receiver.AbandonMessageAsync(receivedMessage, cancellationToken: ct);
+            receivedMessage = await receiver.ReceiveMessageAsync(cancellationToken: ct);
+        }
+
+        return false;
+    }
+
+    public IAsyncEnumerable<QueueMessage> PeekAllMessages(QueueOrTopicName queue, CancellationToken ct = default) =>
+        PeekAllMessagesFromQueueOrTopicSubscription(queue, null, ct);
+
+    public IAsyncEnumerable<QueueMessage> PeekAllMessages(QueueOrTopicName topic, SubscriptionName subscription,
+        CancellationToken ct = default) => PeekAllMessagesFromQueueOrTopicSubscription(topic, subscription, ct);
+
+    private async Task SendJsonMessage(QueueOrTopicName queue, string jsonBody, CancellationToken ct = default)
+    {
+        SetUp();
+        await using var sender = _client.CreateSender(queue.ToString());
+        var message = new ServiceBusMessage(jsonBody) { ContentType = "application/json" };
         await sender.SendMessageAsync(message, ct);
     }
 
-    public async IAsyncEnumerable<QueueMessage> PeekAllMessages(
-        string queue, 
+    private async IAsyncEnumerable<QueueMessage> PeekAllMessagesFromQueueOrTopicSubscription(
+        QueueOrTopicName queueOrTopicName, SubscriptionName? subscription,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         SetUp();
-        await using var receiver = _client.CreateReceiver(queue);
+        await using var receiver = CreateReceiver(queueOrTopicName, subscription);
         long? sequenceNumber = null;
         while (true)
         {
-                IReadOnlyList<ServiceBusReceivedMessage> msgs;
-                try
+            IReadOnlyList<ServiceBusReceivedMessage> msgs;
+            try
+            {
+                if (sequenceNumber.HasValue)
                 {
-                    if (sequenceNumber.HasValue)
-                    {
-                        msgs = await receiver.PeekMessagesAsync(maxMessages: 100,
-                            fromSequenceNumber: sequenceNumber.Value, ct);
-                    }
-                    else
-                    {
-                        msgs = await receiver.PeekMessagesAsync(maxMessages: 100, cancellationToken: ct);
-                    }
+                    msgs = await receiver.PeekMessagesAsync(maxMessages: 100,
+                        fromSequenceNumber: sequenceNumber.Value, ct);
                 }
-                catch (ServiceBusException e) when(e.Reason == ServiceBusFailureReason.MessagingEntityNotFound)
+                else
                 {
-                    throw new QueueNotFoundException(e, queue);
+                    msgs = await receiver.PeekMessagesAsync(maxMessages: 100, cancellationToken: ct);
                 }
+            }
+            catch (ServiceBusException e) when (e.Reason == ServiceBusFailureReason.MessagingEntityNotFound)
+            {
+                throw new QueueNotFoundException(e, queueOrTopicName);
+            }
 
-                if (!msgs.Any())
-                {
-                    yield break;
-                }
+            if (!msgs.Any())
+            {
+                yield break;
+            }
 
-                foreach (var message in msgs)
-                {
-                    yield return new QueueMessage(message);
-                }
+            foreach (var message in msgs)
+            {
+                yield return new QueueMessage(message);
+            }
 
-                sequenceNumber = msgs.Last().SequenceNumber + 1;
+            sequenceNumber = msgs.Last().SequenceNumber + 1;
         }
     }
 
-    public async Task<QueueMessage> PeekMessage(string queue, string messageId, CancellationToken ct = default)
+    public async Task<QueueMessage> PeekMessage(QueueOrTopicName queue, MessageId messageId,
+        CancellationToken ct = default)
     {
         SetUp();
-        await using var receiver = _client.CreateReceiver(queue);
         await foreach (var msg in PeekAllMessages(queue, ct))
         {
             if (msg.Id == messageId) return msg;
         }
+
         throw new MessageNotFoundException(queue, messageId);
+    }
+
+    public async Task<QueueMessage> PeekMessage(QueueOrTopicName topic, SubscriptionName subscription,
+        MessageId messageId, CancellationToken ct = default)
+    {
+        SetUp();
+        await foreach (var msg in PeekAllMessages(topic, subscription, ct))
+        {
+            if (msg.Id == messageId) return msg;
+        }
+
+        throw new MessageNotFoundException(topic, messageId);
     }
 
     public async ValueTask DisposeAsync()

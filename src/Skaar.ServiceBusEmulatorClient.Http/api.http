@@ -1,5 +1,7 @@
 @rootUrl=http://localhost:5278/
 @queueName=queue.1
+@topicName=weu-dev-nadin-prices-upload-sbt
+@subscription=carsales-sbts
 
 ### List all message-ids in a queue
 
@@ -14,12 +16,37 @@ GET {{rootUrl}}/queue/{{queueName}}
 @messageId=8bac1145d3b14b21a677127ade260773
 
 GET {{rootUrl}}/queue/{{queueName}}/{{messageId}}
+    
+### List all message-ids in a topic
+
+GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/ids
+
+### Get all messages in topic
+
+GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/
+
+### Get one message from topic
+
+GET {{rootUrl}}/topic/{{topicName}}/{{subscription}}/{{messageId}}
 
 ### Post message to queue
 
 POST {{rootUrl}}/queue/{{queueName}}
 Content-Type: application/xml
+Subject: Example xml
 
 <document>
     <text>Some text</text>
 </document>
+
+### Post message to topic
+
+POST {{rootUrl}}/topic/{{topicName}}
+Content-Type: application/json
+Subject: Some random json
+
+{
+  "document": {
+    "text": "Some text"
+  }
+}

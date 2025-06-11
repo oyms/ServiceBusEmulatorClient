@@ -1,9 +1,10 @@
 using Azure.Messaging.ServiceBus;
+using Skaar.ServiceBusEmulatorClient.Model;
 
 namespace Skaar.ServiceBusEmulatorClient.Exceptions;
 
-public class QueueNotFoundException(ServiceBusException inner, string queueName)
+public class QueueNotFoundException(ServiceBusException inner, QueueOrTopicName queueName)
     : ServiceBusEmulatorClientException("Could not find queue " + queueName, inner)
 {
-    public string QueueName { get; } = queueName;
+    public QueueOrTopicName QueueName { get; } = queueName;
 }

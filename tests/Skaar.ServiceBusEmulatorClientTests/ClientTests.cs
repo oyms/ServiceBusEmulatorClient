@@ -1,12 +1,13 @@
 
 using Skaar.ServiceBusEmulatorClient;
+using Skaar.ServiceBusEmulatorClient.Model;
 using System.Reflection;
 
 namespace Skaar.ServiceBusEmulatorClientTests;
 
 public class ClientTests(ITestContextAccessor testContextAccessor)
 {
-    private const string QueueName = "queue.1";
+    private readonly QueueOrTopicName _queueName = QueueOrTopicName.Parse("queue.1");
     private readonly IConfiguration _config = new EmulatorConfiguration();
     private readonly ITestOutputHelper _output = testContextAccessor.Current.TestOutputHelper!;
     
@@ -15,7 +16,7 @@ public class ClientTests(ITestContextAccessor testContextAccessor)
     {
         await using var target = new Client(_config);
         var body = new{Text="Some text", Flag=true, Value=Random.Shared.Next()};
-        await target.SendJsonMessage(QueueName, body, null, testContextAccessor.Current.CancellationToken);
+        await target.SendJsonMessage(_queueName, body, null, testContextAccessor.Current.CancellationToken);
     }    
     
     [Fact]
@@ -26,7 +27,7 @@ public class ClientTests(ITestContextAccessor testContextAccessor)
         await using var target = new Client(_config);
         await using var stream = new MemoryStream();
         await image!.CopyToAsync(stream, cancellationToken);
-        await target.SendMessage(QueueName, "image/png", stream.ToArray(), "Bus stop", cancellationToken);
+        await target.SendMessage(_queueName, "image/png", stream.ToArray(), "Bus stop", cancellationToken);
     }
     
     [Fact]
@@ -34,7 +35,7 @@ public class ClientTests(ITestContextAccessor testContextAccessor)
     {
         await using var target = new Client(_config);
 
-        var result = target.PeekAllMessages(QueueName, testContextAccessor.Current.CancellationToken);
+        var result = target.PeekAllMessages(_queueName, testContextAccessor.Current.CancellationToken);
 
         await foreach (var msg in result)
         {

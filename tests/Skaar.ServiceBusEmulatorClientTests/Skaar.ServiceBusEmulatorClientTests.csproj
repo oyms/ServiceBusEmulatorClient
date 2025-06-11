@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageReference Include="Testcontainers" Version="4.5.0" />
         <PackageReference Include="xunit.v3" Version="1.1.0"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2"/>
     </ItemGroup>
@@ -31,6 +32,10 @@
     <ItemGroup>
       <None Remove="Resources\sign.png" />
       <EmbeddedResource Include="Resources\sign.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Docker\" />
     </ItemGroup>
 
 </Project>

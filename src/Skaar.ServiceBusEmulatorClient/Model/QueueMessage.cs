@@ -13,7 +13,7 @@ public record QueueMessage
     
     public static explicit operator ServiceBusReceivedMessage(QueueMessage message) => message._message;
     
-    public string Id => _message.MessageId;
+    public MessageId Id => MessageId.Parse(_message.MessageId);
 
     public string ContentType => _message.ContentType;
     public BinaryData Body => _message.Body;
