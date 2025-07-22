@@ -3,7 +3,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591;CA1822</NoWarn>
         <AssemblyVersion>$(Version)</AssemblyVersion>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>0.0.2</VersionPrefix>
         <Product>Servicebus emulator client</Product>
         <Authors>Skaar</Authors>
         <PackageTags>Development;ServiceBus;Azure</PackageTags>
