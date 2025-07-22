@@ -26,7 +26,8 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal -- --filter-query /"[category!=clienttests]"
+
 
       - name: Pack NuGet packages
         run: dotnet pack --configuration Release --no-build --output nupkgs

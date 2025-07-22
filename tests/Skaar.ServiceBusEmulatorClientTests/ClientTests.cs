@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace Skaar.ServiceBusEmulatorClientTests;
 
+[Trait("Category", "ClientTests")]
 public class ClientTests(ITestContextAccessor testContextAccessor)
 {
     private readonly QueueOrTopicName _queueName = QueueOrTopicName.Parse("queue.1");
